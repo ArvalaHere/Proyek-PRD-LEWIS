@@ -7,3 +7,5 @@
 # 4. Program komunikasi antara Arduino dengan Python
 
 # GitHub GitGud
+
+print("Dengan izin Tuhan, PRD kami jadi yang terbaik.")

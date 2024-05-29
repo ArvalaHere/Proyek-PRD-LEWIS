@@ -1,0 +1,32 @@
+import discord
+import serial
+import time
+
+# Mengonfigurasi intents
+intents = discord.Intents.default()
+intents.message_content = True  # Mengaktifkan intent untuk konten pesan
+
+# Buat instance dari Client Discord dengan intents
+client = discord.Client(intents=intents)
+
+# Hubungkan ke Arduino melalui port serial (sesuaikan dengan port Anda)
+arduino = serial.Serial('COM6', 9600, timeout=1) #COM6 merupakan contoh port yang digunakan. Ganti dengan port yang ingin digunakan
+time.sleep(2)
+
+@client.event
+async def on_ready():
+    print(f'We have logged in as {client.user}')
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    if message.content.startswith('!alert'):
+        print("Sending alert to Arduino")
+        arduino.write(b'ALERT\n')  # Mengirimkan teks 'ALERT' ke Arduino
+        time.sleep(1)
+        await message.channel.send('Alert sent to Arduino!') #Jika pesan terkirim akan memunculkan pesan ini pada bot discord
+
+# Ganti 'YOUR_DISCORD_BOT_TOKEN' dengan token bot yang Anda dapatkan
+client.run('YOUR_DISCORD_BOT_TOKEN')

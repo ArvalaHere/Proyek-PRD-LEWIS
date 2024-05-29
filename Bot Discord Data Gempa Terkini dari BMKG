@@ -1,0 +1,62 @@
+import requests
+import xml.etree.ElementTree as ET
+import discord
+from discord.ext import commands
+
+# URL data gempa BMKG
+url = "https://data.bmkg.go.id/DataMKG/TEWS/autogempa.xml"
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
+}
+
+# Bot token Anda
+TOKEN = 'YOUR_DISCORD_BOT_TOKEN'
+
+# Inisialisasi bot dengan intents yang diperbarui
+intents = discord.Intents.default()
+intents.message_content = True  # Aktifkan intent untuk konten pesan
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# Fungsi untuk mendapatkan data gempa
+def get_gempa_data():
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = ET.fromstring(response.content)
+        gempa_info = {
+            "Tanggal": data.find(".//Tanggal").text,
+            "Jam": data.find(".//Jam").text,
+            "DateTime": data.find(".//DateTime").text,
+            "Magnitude": data.find(".//Magnitude").text,
+            "Kedalaman": data.find(".//Kedalaman").text,
+            "Koordinat": data.find(".//coordinates").text,
+            "Lintang": data.find(".//Lintang").text,
+            "Bujur": data.find(".//Bujur").text,
+            "Lokasi": data.find(".//Wilayah").text,
+            "Dirasakan": data.find(".//Dirasakan").text
+        }
+        return gempa_info
+    else:
+        return None
+
+# Command bot untuk menampilkan data gempa
+@bot.command()
+async def gempa(ctx):
+    gempa_info = get_gempa_data()
+    if gempa_info:
+        embed = discord.Embed(title="Gempabumi Terbaru", color=0xff0000)
+        embed.add_field(name="Tanggal", value=gempa_info["Tanggal"], inline=False)
+        embed.add_field(name="Jam", value=gempa_info["Jam"], inline=False)
+        embed.add_field(name="DateTime", value=gempa_info["DateTime"], inline=False)
+        embed.add_field(name="Magnitudo", value=gempa_info["Magnitude"], inline=False)
+        embed.add_field(name="Kedalaman", value=gempa_info["Kedalaman"], inline=False)
+        embed.add_field(name="Koordinat", value=gempa_info["Koordinat"], inline=False)
+        embed.add_field(name="Lintang", value=gempa_info["Lintang"], inline=False)
+        embed.add_field(name="Bujur", value=gempa_info["Bujur"], inline=False)
+        embed.add_field(name="Lokasi", value=gempa_info["Lokasi"], inline=False)
+        embed.add_field(name="Dirasakan", value=gempa_info["Dirasakan"], inline=False)
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send("Gagal mengakses data gempa!")
+
+# Menjalankan bot
+bot.run(TOKEN)
